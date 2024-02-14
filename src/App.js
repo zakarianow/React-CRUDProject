@@ -1,24 +1,49 @@
-import logo from './logo.svg';
+
 import './App.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import RootLayout from './CRUD/components/RootLayout';
+import ErrorPage from './CRUD/pages/ErrorPage';
+import EditPost from './CRUD/pages/EditPost';
+import Detail from './CRUD/pages/Detail';
+import Feed from './CRUD/components/Feed';
+import { Provider } from 'react-redux';
+import store from './CRUD/store/index';
+import InsertPost from './CRUD/pages/InsertPost';
+
 
 function App() {
+  
+  const postParamHandler = ({ params }) => {
+    
+    if(isNaN(params.id)){
+      throw new Response("Bad Request", {
+        statusText : "Please, make sure to insert correct post id",
+        status: 400,
+      });
+    }
+    return params.id;
+  }
+
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <RootLayout />,
+      errorElement: <ErrorPage />,
+      children: [
+        {index: true , element: <Feed />},
+        {path: "post/add", element: <InsertPost/>},
+        {path: "post/:id/edit", element: <EditPost />, loader: postParamHandler},
+        {path: "post/:id", element: <Detail />, loader: postParamHandler}
+        ]
+    }
+  ])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Provider store={store}>
+        <RouterProvider router={router} />
+    </Provider>
+    
   );
 }
 
